@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.HttpProxy;
-import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
-import com.extjs.gxt.ui.client.data.XmlLoadResultReader;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.IconHelper;
@@ -20,8 +22,11 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
+import com.extjs.gxt.ui.client.widget.grid.GridView;
+import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
+import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.user.client.Element;
 import com.hellbelk.client.Strings;
 import com.hellbelk.shared.Constants;
 
@@ -30,7 +35,12 @@ public class WorkTimeWindow extends Window{
 	protected final String ADD_ACTION = "add";
 	protected final String DELETE_ACTION = "delete";
 	protected final String EDIT_ACTION = "edit";
-
+	
+	Grid<ModelData> grid;
+	Button addBt;
+	Button deleteBt;
+	Button editBt;
+	
 	public WorkTimeWindow(){
 		super();
 		
@@ -39,9 +49,30 @@ public class WorkTimeWindow extends Window{
 	    setHeading(Strings.WORK_TIME);
 	    setWidth(460);
 	    setHeight(350);
+	    setLayout(new BorderLayout());
+	    BorderLayoutData data = new BorderLayoutData(LayoutRegion.CENTER);
 	    
 	    setTopComponent(createControls());
-	    add(createGrid());
+	    
+	    Grid<ModelData> workGrid = createGrid();
+	    
+	    workGrid.addListener(Events.SelectionChange, new Listener<SelectionChangedEvent<ModelData>>() {
+
+			@Override
+			public void handleEvent(SelectionChangedEvent<ModelData> be) {
+				if(be.getSelection().size() == 0){
+					deleteBt.setEnabled(false);
+				}else if(be.getSelection().size() == 1 ){
+					deleteBt.setEnabled(true);
+					editBt.setEnabled(true);
+				}else if(be.getSelection().size() > 1){
+					deleteBt.setEnabled(true);
+					editBt.setEnabled(false);
+				}
+				
+			}});
+	    
+	    add(workGrid, data);
 	}
 	
 	protected ToolBar createControls(){
@@ -50,38 +81,41 @@ public class WorkTimeWindow extends Window{
 			@Override
 			public void componentSelected(ButtonEvent ce) {
 				if(ce.getComponent().getData(ACTION_TAG).equals(ADD_ACTION)){
-					new EditWork().show();
+					new EditWork(WorkTimeWindow.this).show();					
 				}else if(ce.getComponent().getData(ACTION_TAG).equals(DELETE_ACTION)){
-					MessageBox.info("Info", "Delete action", null);
+					for(ModelData data : grid.getSelectionModel().getSelection()){
+						grid.getStore().remove(data);
+					}
+					//TODO: add delete callback 
 				}else if(ce.getComponent().getData(ACTION_TAG).equals(EDIT_ACTION)){
-					new EditWork(new Date(), new Date(), new Date(), "test").show();
+					new EditWork(WorkTimeWindow.this, grid.getSelectionModel().getSelectedItem()).show();
 				}
 			}
 			
 		};
 		
 		ToolBar toolBar = new ToolBar();
-	    Button item = new Button();
-	    item.setIcon(IconHelper.createStyle("add_work_icon"));
-	    item.setData(ACTION_TAG, ADD_ACTION);
-	    item.addSelectionListener(listener);
-	    toolBar.add(item);
+	    addBt = new Button();
+	    addBt.setIcon(IconHelper.createStyle("add_work_icon"));
+	    addBt.setData(ACTION_TAG, ADD_ACTION);
+	    addBt.addSelectionListener(listener);
+	    toolBar.add(addBt);
 	    
-	    item = new Button();
-	    item.setIcon(IconHelper.createStyle("delete_work_icon"));
-	    item.setData(ACTION_TAG, DELETE_ACTION);
-	    item.addSelectionListener(listener);
-	    toolBar.add(item);
+	    deleteBt = new Button();
+	    deleteBt.setIcon(IconHelper.createStyle("delete_work_icon"));
+	    deleteBt.setData(ACTION_TAG, DELETE_ACTION);
+	    deleteBt.addSelectionListener(listener);
+	    toolBar.add(deleteBt);
 
-	    item = new Button();
-	    item.setIcon(IconHelper.createStyle("edit_work_icon"));
-	    item.setData(ACTION_TAG, EDIT_ACTION);
-	    item.addSelectionListener(listener);
-	    toolBar.add(item);
+	    editBt = new Button();
+	    editBt.setIcon(IconHelper.createStyle("edit_work_icon"));
+	    editBt.setData(ACTION_TAG, EDIT_ACTION);
+	    editBt.addSelectionListener(listener);
+	    toolBar.add(editBt);
 	    return toolBar;
 	}
 	
-	protected Grid createGrid(){
+	protected Grid<ModelData> createGrid(){
 		List<ColumnConfig> columns = new ArrayList<ColumnConfig>();
 	    columns.add(new ColumnConfig(Constants.DATE_TAG, Strings.DATE, 40));
 	    columns.add(new ColumnConfig(Constants.START_TAG, Strings.START, 40));
@@ -93,12 +127,13 @@ public class WorkTimeWindow extends Window{
 
 	    ModelType type = new ModelType();
 	    type.setRoot(Constants.DAYS_TAG);
-	    type.setRecordName(Constants.DAY_TAG);
-	    type.addField(Constants.DATE_TAG);
-	    type.addField(Constants.START_TAG);
-	    type.addField(Constants.BREAK_TAG);
-	    type.addField(Constants.END_TAG);
-	    type.addField(Constants.COMMENT_TAG);
+	    type.setRecordName(Constants.DAY_TAG);	    
+	    type.addField(Constants.DATE_TAG, "@"+Constants.DATE_TAG);
+	    type.addField(Constants.START_TAG, "@"+Constants.START_TAG);
+	    type.addField(Constants.BREAK_TAG, "@"+Constants.BREAK_TAG);
+	    type.addField(Constants.END_TAG, "@"+Constants.END_TAG);
+	    type.addField(Constants.COMMENT_TAG, "@"+Constants.COMMENT_TAG);
+	        
 
 	    // Determine if Explorer or Example for XML path
 //	    String path = GWT.getHostPageBaseURL() + (Examples.isExplorer() ? "" : "../../") + "data/data.xml";
@@ -114,10 +149,76 @@ public class WorkTimeWindow extends Window{
 //	        reader);
 
 //	    ListStore<ModelData> store = new ListStore<ModelData>(loader);
+	    
+	    
 	    ListStore<ModelData> store = new ListStore<ModelData>();
-	    final Grid<ModelData> grid = new Grid<ModelData>(store, cm);
-	    grid.setBorders(true);
-	    grid.setLoadMask(true);
+
+//fake data
+	    List<ModelData> works = new ArrayList<ModelData>();
+	    for(int i = 0; i < 10; i++){
+	    	works.add(new Work("1","1","1","1","work" + i));
+	    }
+	    store.add(works);
+//fake data end
+
+	    
+	    grid = new Grid<ModelData>(store, cm);    
+	    grid.setBorders(true);	
+	    grid.getSelectionModel().setSelectionMode(SelectionMode.MULTI);	    
 	    return grid;
+	}
+
+	public static class Work extends BaseModel{
+		public Work(){
+			
+		}
+		
+		public Work(String date, String start, String _break, String end, String comment){
+			setDay(date);
+			setStart(start);
+			setBreak(_break);			
+			setEnd(end);
+			setComment(comment);
+		}
+		
+		public void setDay(String date){
+			set(Constants.DATE_TAG, date);
+		}
+		
+		public void setStart(String start){
+			set(Constants.START_TAG, start);
+		}
+		
+		public void setBreak(String _break){
+			set(Constants.BREAK_TAG, _break);
+		}
+		
+		public void setEnd(String end){
+			set(Constants.END_TAG, end);
+		}
+		
+		public void setComment(String comment){
+			set(Constants.COMMENT_TAG, comment);
+		}
+		
+		public String getDay(){
+			return (String)get(Constants.DATE_TAG);
+		}
+		
+		public String getStart(){
+			return (String)get(Constants.START_TAG);
+		}
+		
+		public String getBreak(){
+			return (String)get(Constants.BREAK_TAG);
+		}
+		
+		public String getEnd(){
+			return (String)get(Constants.END_TAG);
+		}
+		
+		public String getComment(){
+			return (String)get(Constants.COMMENT_TAG);
+		}
 	}
 }

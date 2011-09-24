@@ -9,7 +9,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.Window;
 import com.google.gwt.core.client.EntryPoint;
 
-public class WebDesktop implements EntryPoint {
+public class WebDesktop implements EntryPoint{
 	private Desktop desktop = new Desktop();
 	
 	private void itemSelected(ComponentEvent ce) {
