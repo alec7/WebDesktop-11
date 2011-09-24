@@ -34,7 +34,7 @@ public class EditWork extends Dialog {
 		this(parent, null);
 	}
 	
-	public EditWork(WorkTimeWindow parent, ModelData data){
+	public EditWork(final WorkTimeWindow parent, final ModelData data){
 		this.parent = parent;
 		mode = data == null ? ADD : EDIT;
 		
@@ -95,9 +95,15 @@ public class EditWork extends Dialog {
 					data.set(Constants.BREAK_TAG, new DateWrapper(breakTf.getDateValue()).toString());
 					data.set(Constants.END_TAG, new DateWrapper(endTf.getDateValue()).toString());
 					data.set(Constants.COMMENT_TAG, commentAr.getValue());
+					parent.addWork(data);
 				}else{
-					
+					data.set(Constants.START_TAG, startTf.getValue().toString());
+					data.set(Constants.BREAK_TAG, breakTf.getValue().toString());
+					data.set(Constants.END_TAG, endTf.getValue().toString());
+					data.set(Constants.COMMENT_TAG, commentAr.getValue());
+					parent.modifyWork(data);
 				}
+				EditWork.this.hide();
 			}
 		});
         

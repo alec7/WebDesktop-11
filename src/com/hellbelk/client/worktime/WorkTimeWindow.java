@@ -7,6 +7,7 @@ import java.util.List;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelComparer;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -56,21 +57,15 @@ public class WorkTimeWindow extends Window{
 	    
 	    Grid<ModelData> workGrid = createGrid();
 	    
-	    workGrid.addListener(Events.SelectionChange, new Listener<SelectionChangedEvent<ModelData>>() {
-
-			@Override
-			public void handleEvent(SelectionChangedEvent<ModelData> be) {
-				if(be.getSelection().size() == 0){
-					deleteBt.setEnabled(false);
-				}else if(be.getSelection().size() == 1 ){
-					deleteBt.setEnabled(true);
-					editBt.setEnabled(true);
-				}else if(be.getSelection().size() > 1){
-					deleteBt.setEnabled(true);
-					editBt.setEnabled(false);
-				}
-				
-			}});
+//	    workGrid.addListener(Events.SelectionChange, new Listener<SelectionChangedEvent<ModelData>>() {
+//
+//			@Override
+//			public void handleEvent(SelectionChangedEvent<ModelData> be) {
+//				if(be == null)
+//					MessageBox.alert("Warnint", "Selection is null", null);
+//				deleteBt.setEnabled(be.getSelection().size() > 0);
+//				editBt.setEnabled(be.getSelection().size() == 1);			
+//			}});
 	    
 	    add(workGrid, data);
 	}
@@ -95,7 +90,7 @@ public class WorkTimeWindow extends Window{
 		};
 		
 		ToolBar toolBar = new ToolBar();
-	    addBt = new Button();
+		addBt = new Button();
 	    addBt.setIcon(IconHelper.createStyle("add_work_icon"));
 	    addBt.setData(ACTION_TAG, ADD_ACTION);
 	    addBt.addSelectionListener(listener);
@@ -105,12 +100,14 @@ public class WorkTimeWindow extends Window{
 	    deleteBt.setIcon(IconHelper.createStyle("delete_work_icon"));
 	    deleteBt.setData(ACTION_TAG, DELETE_ACTION);
 	    deleteBt.addSelectionListener(listener);
+	    deleteBt.setEnabled(false);
 	    toolBar.add(deleteBt);
 
 	    editBt = new Button();
 	    editBt.setIcon(IconHelper.createStyle("edit_work_icon"));
 	    editBt.setData(ACTION_TAG, EDIT_ACTION);
 	    editBt.addSelectionListener(listener);
+	    editBt.setEnabled(false);
 	    toolBar.add(editBt);
 	    return toolBar;
 	}
@@ -123,7 +120,7 @@ public class WorkTimeWindow extends Window{
 	    columns.add(new ColumnConfig(Constants.END_TAG, Strings.END, 40));
 	    columns.add(new ColumnConfig(Constants.COMMENT_TAG, Strings.COMMENT, 300));
 
-	    ColumnModel cm = new ColumnModel(columns);
+	    ColumnModel cm = new ColumnModel(columns);	    
 
 	    ModelType type = new ModelType();
 	    type.setRoot(Constants.DAYS_TAG);
@@ -151,7 +148,14 @@ public class WorkTimeWindow extends Window{
 //	    ListStore<ModelData> store = new ListStore<ModelData>(loader);
 	    
 	    
-	    ListStore<ModelData> store = new ListStore<ModelData>();
+	    ListStore<ModelData> store = new ListStore<ModelData>();	    
+	    store.setModelComparer(new ModelComparer<ModelData>() {
+			
+			@Override
+			public boolean equals(ModelData m1, ModelData m2) {
+				return m1.get(Constants.DATE_TAG).equals(m2.get(Constants.DATE_TAG));				
+			}
+		});
 
 //fake data
 	    List<ModelData> works = new ArrayList<ModelData>();
@@ -166,6 +170,14 @@ public class WorkTimeWindow extends Window{
 	    grid.setBorders(true);	
 	    grid.getSelectionModel().setSelectionMode(SelectionMode.MULTI);	    
 	    return grid;
+	}
+	
+	public void addWork(ModelData data){
+		grid.getStore().add(data);
+	}
+	
+	public void modifyWork(ModelData data){
+		grid.getStore().update(data);
 	}
 
 	public static class Work extends BaseModel{
