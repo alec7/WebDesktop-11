@@ -10,14 +10,14 @@ import org.springframework.stereotype.Controller;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.hellbelk.client.bean.Worker;
 import com.hellbelk.client.service.WorkerService;
-import com.hellbelk.server.dao.WorkerDAO;
+import com.hellbelk.server.dao.WorkerDAOImpl;
 
 @Controller
 public class WorkerServiceImpl extends RemoteServiceServlet implements
 		WorkerService {
 
 	@Autowired
-	private WorkerDAO workerDAO = null;
+	private WorkerDAOImpl workerDAO = null;
 	
 	@Override
 	public List<Worker> getAllWorkers() {

@@ -15,7 +15,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.hellbelk.client.bean.Work;
 import com.hellbelk.client.bean.Worker;
 import com.hellbelk.client.service.WorkService;
-import com.hellbelk.server.dao.WorkDAO;
+import com.hellbelk.server.dao.WorkDAOImpl;
 import com.hellbelk.server.util.ConvertUtil;
 
 
@@ -25,7 +25,7 @@ public class WorkServiceImpl extends RemoteServiceServlet implements
 		WorkService {
 	
 	@Autowired
-	private WorkDAO workDAO = null;
+	private WorkDAOImpl workDAO = null;
 	
 	@Override
 	public List<Work> getWorksOfMonth(Worker worker) {
