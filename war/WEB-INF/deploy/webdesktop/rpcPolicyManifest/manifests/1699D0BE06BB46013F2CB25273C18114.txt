@@ -1,0 +1,2 @@
+serviceClass: com.hellbelk.client.service.WorkerService
+path: F08D8E0182C209FF4E769CB16A4FA9E5.gwt.rpc

@@ -1,2 +1,4 @@
 # Module webdesktop
 # RPC service class, partial path of RPC policy file
+com.hellbelk.client.service.WorkerService, F08D8E0182C209FF4E769CB16A4FA9E5.gwt.rpc
+com.hellbelk.client.service.WorkService, 95B0008C30ED57F29C8691CD2CF6A8E9.gwt.rpc

@@ -6,7 +6,7 @@
 <web-app>
   
   <!-- Servlets -->
-  <servlet>
+  <!-- servlet>
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>com.hellbelk.server.GreetingServiceImpl</servlet-class>
   </servlet>
@@ -14,9 +14,28 @@
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/webdesktop/greet</url-pattern>
+  </servlet-mapping-->
+  
+  <servlet>
+  	<servlet-name>work_service</servlet-name>
+  	<servlet-class>com.hellbelk.server.controller.WorkServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet>
+  	<servlet-name>worker_service</servlet-name>
+  	<servlet-class>com.hellbelk.server.controller.WorkerServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>work_service</servlet-name>
+  	<url-pattern>/webdesktop/work_service</url-pattern>
   </servlet-mapping>
   
-  <!-- Default page to serve -->
+  <servlet-mapping>
+  	<servlet-name>worker_service</servlet-name>
+  	<url-pattern>/webdesktop/worker_service</url-pattern>
+  </servlet-mapping>
+  
   <welcome-file-list>
     <welcome-file>WebDesktop.html</welcome-file>
   </welcome-file-list>

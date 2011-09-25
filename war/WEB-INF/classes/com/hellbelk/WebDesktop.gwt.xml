@@ -2,17 +2,10 @@
 <module rename-to='webdesktop'>  
   <inherits name='com.google.gwt.user.User'/>
   <inherits name="com.extjs.gxt.ui.GXT" />
-
-  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
-  <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
-  <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
-
   <inherits name='com.extjs.gxt.desktop.WebDesktop' />
+  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <entry-point class='com.hellbelk.client.ui.WebDesktop'/>
 
-  <entry-point class='com.hellbelk.client.WebDesktop'/>
-
-  <!-- Specify the paths for translatable code                    -->
   <source path='client'/>
-  <source path='shared'/>
 
 </module>
